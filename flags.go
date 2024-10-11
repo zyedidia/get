@@ -16,6 +16,7 @@ type Flags struct {
 	Verify      string
 	Remove      bool
 	DisableSSL  bool
+	ListOnly    bool
 }
 
 type CliFlags struct {
@@ -38,4 +39,5 @@ type CliFlags struct {
 	Help        bool      `short:"h" long:"help" description:"show this help message"`
 	DownloadAll bool      `short:"D" long:"download-all" description:"download all projects defined in the config file"`
 	DisableSSL  *bool     `short:"k" long:"disable-ssl" description:"disable SSL verification for download requests"`
+	ListOnly    *bool     `short:"l" long:"list-only" description:"only list available releases, don't download any"`
 }

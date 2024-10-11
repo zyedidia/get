@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"net/http"
+	"sort"
 	"strings"
 	"time"
 )
@@ -13,6 +14,7 @@ import (
 // A Finder returns a list of URLs making up a project's assets.
 type Finder interface {
 	Find() ([]string, error)
+	List() ([]string, error)
 }
 
 // A GithubRelease matches the Assets portion of Github's release API json.
@@ -176,25 +178,47 @@ func (f *GithubAssetFinder) FindMatch() ([]string, error) {
 	return nil, fmt.Errorf("no matching tag for '%s'", tag)
 }
 
-// finds the latest pre-release and returns the tag
-func (f *GithubAssetFinder) getLatestTag() (string, error) {
+func (f *GithubAssetFinder) List() ([]string, error) {
+	releases, err := f.getAllReleases()
+	if err != nil {
+		return nil, fmt.Errorf("list releases: %w", err)
+	}
+	var tags []string
+	sort.Slice(releases, func(i, j int) bool {
+		return releases[i].CreatedAt.After(releases[j].CreatedAt)
+	})
+	for _, r := range releases {
+		tags = append(tags, r.Tag)
+	}
+	return tags, nil
+}
+
+func (f *GithubAssetFinder) getAllReleases() ([]GithubRelease, error) {
 	url := fmt.Sprintf("https://api.github.com/repos/%s/releases", f.Repo)
 	resp, err := Get(url)
 	if err != nil {
-		return "", fmt.Errorf("pre-release finder: %w", err)
+		return nil, fmt.Errorf("release finder: %w", err)
 	}
 
 	var releases []GithubRelease
 
 	body, err := io.ReadAll(resp.Body)
 	if err != nil {
-		return "", fmt.Errorf("pre-release finder: %w", err)
+		return nil, fmt.Errorf("release finder: %w", err)
 	}
 	err = json.Unmarshal(body, &releases)
 	if err != nil {
-		return "", fmt.Errorf("pre-release finder: %w", err)
+		return nil, fmt.Errorf("release finder: %w", err)
 	}
+	return releases, nil
+}
 
+// finds the latest pre-release and returns the tag
+func (f *GithubAssetFinder) getLatestTag() (string, error) {
+	releases, err := f.getAllReleases()
+	if err != nil {
+		return "", fmt.Errorf("pre-release finders: %w", err)
+	}
 	if len(releases) <= 0 {
 		return "", fmt.Errorf("no releases found")
 	}
@@ -210,6 +234,9 @@ type DirectAssetFinder struct {
 func (f *DirectAssetFinder) Find() ([]string, error) {
 	return []string{f.URL}, nil
 }
+func (f *DirectAssetFinder) List() ([]string, error) {
+	return f.Find()
+}
 
 type GithubSourceFinder struct {
 	Tool string
@@ -219,4 +246,7 @@ type GithubSourceFinder struct {
 
 func (f *GithubSourceFinder) Find() ([]string, error) {
 	return []string{fmt.Sprintf("https://github.com/%s/tarball/%s/%s.tar.gz", f.Repo, f.Tag, f.Tool)}, nil
+}
+func (f *GithubSourceFinder) List() ([]string, error) {
+	return f.Find()
 }

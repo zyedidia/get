@@ -423,6 +423,16 @@ func main() {
 		fatal(err)
 	}
 
+	if opts.ListOnly {
+		releases, err := finder.List()
+		if err != nil {
+			fatal(err)
+		}
+		r := strings.Join(releases, "\n* ")
+		fmt.Fprintf(output, "available releases in %s:\n* %v\n", target, r)
+		os.Exit(0)
+	}
+
 	detector, err := getDetector(&opts)
 	if err != nil {
 		fatal(err)

@@ -40,6 +40,7 @@ type ConfigRepository struct {
 	UpgradeOnly  bool     `toml:"upgrade_only"`
 	Verify       string   `toml:"verify_sha256"`
 	DisableSSL   bool     `toml:"disable_ssl"`
+	ListOnly     bool     `toml:"list_only"`
 }
 
 type Config struct {
@@ -247,6 +248,7 @@ func SetGlobalOptionsFromConfig(config *Config, parser *flags.Parser, opts *Flag
 	opts.Verify = update("", cli.Verify)
 	opts.Remove = update(false, cli.Remove)
 	opts.DisableSSL = update(false, cli.DisableSSL)
+	opts.ListOnly = update(false, cli.ListOnly)
 	return nil
 }
 
@@ -271,6 +273,7 @@ func SetProjectOptionsFromConfig(config *Config, parser *flags.Parser, opts *Fla
 			opts.UpgradeOnly = update(repo.UpgradeOnly, cli.UpgradeOnly)
 			opts.Verify = update(repo.Verify, cli.Verify)
 			opts.DisableSSL = update(repo.DisableSSL, cli.DisableSSL)
+			opts.ListOnly = update(repo.ListOnly, cli.ListOnly)
 			break
 		}
 	}
