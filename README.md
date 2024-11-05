@@ -161,8 +161,11 @@ Application Options:
 
 # Configuration
 
-Eget can be configured using a TOML file located at `~/.eget.toml` or it will fallback to the expected `XDG_CONFIG_HOME` directory of your os. Alternatively,
-the configuration file can be located in the same directory as the Eget binary or the path specified with the environment variable `EGET_CONFIG`.
+Eget can be configured using a TOML file located at `~/.eget.toml` or it will fallback
+to `eget/eget.toml` under the expected `XDG_CONFIG_HOME` directory of your OS eg.
+`~/.config/eget/eget.toml`. Alternatively, the configuration file can be located in the
+same directory as the Eget binary or the path specified with the environment variable
+`EGET_CONFIG`.
 
 Both global settings can be configured, as well as setting on a per-repository basis.
 
